@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Música Online</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        header {
+            background-color: #1db954; /* Verde Spotify-like */
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+        main {
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #1db954;
+        }
+        .song-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .song-item {
+            background-color: #1e1e1e;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .song-item span {
+            flex: 1; /* Espacio para el nombre de la canción */
+            margin-right: 10px;
+        }
+        .progress-container {
+            width: 100%;
+            height: 5px;
+            background-color: white;
+            border-radius: 5px;
+            margin: 0 10px;
+            overflow: hidden;
+            flex: 2; /* Espacio para la barra de progreso */
+            cursor: pointer; /* Indicador visual de clic */
+            position: relative;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: gray;
+        }
+        .time-display {
+            margin-left: 10px;
+            font-size: 14px;
+            color: #1db954;
+        }
+        .song-item button {
+            background-color: #1db954;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .song-item button:hover {
+            background-color: #1aa34a;
+        }
+        .song-item button:disabled {
+            background-color: #333333;
+            cursor: not-allowed;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: transparent; /* Fondo transparente */
+            color: #ffffff;
+            position: relative; /* Cambiado a relativo */
+            bottom: 0;
+            width: 100%;
+        }
+        /* Estilo para la pantalla de selección de idioma */
+        #language-selection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #121212;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #language-selection img {
+            max-width: 60%; /* Reducir el tamaño de la imagen */
+            height: auto;
+            margin-bottom: 20px;
+            position: relative; /* Para posicionar el texto encima */
+        }
+        #language-selection img::after {
+            content: "Billy Strings";
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 2rem; /* Aumentado el tamaño del texto */
+            font-weight: bold;
+        }
+        #language-selection h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        #language-selection .language-options {
+            display: flex;
+            gap: 20px;
+        }
+        #language-selection .language-option {
+            background-color: #1db954;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        #language-selection .language-option:hover {
+            background-color: #1aa34a;
+        }
+        /* Ocultar contenido principal hasta que se seleccione un idioma */
+        main {
+            display: none;
+        }
+        /* Estilo adicional para el título "Billy Strings" en el encabezado */
+        #billy-text {
+            font-size: 2rem; /* Tamaño más grande para "Billy Strings" */
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        /* Estilo para descripción debajo del título Billy Strings */
+        #description-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #d1d1d1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Pantalla de selección de idioma -->
+    <div id="language-selection">
+        <img src="https://i.postimg.cc/Rh8ppYhS/billy.jpg" alt="Portada Billy Strings">
+        <h1>Seleccione un idioma / Select a language</h1>
+        <div class="language-options">
+            <div class="language-option" onclick="setLanguage('es')">Español</div>
+            <div class="language-option" onclick="setLanguage('en')">English</div>
+        </div>
+    </div>
+    <!-- Encabezado -->
+    <header>
+        <h1 id="header-title">🎵 Música Online 🎵</h1>
+        <p id="billy-text">Billy Strings</p>
+        <p id="description-text">Billy Strings es un artista revolucionario que redefine el bluegrass con sus electrizantes habilidades de guitarra y su narrativa conmovedora. Conocido por sus actuaciones en vivo de alta energía, esta selección incluye temas como "Natural Born Gamblin' Man" y "Hollow Heart", combinando raíces tradicionales con un toque moderno. Sumérgete en su música y experimenta la magia de un verdadero innovador del género.</p>
+        <p id="header-subtitle">Escucha tus canciones favoritas de Billy Strings aquí</p>
+    </header>
+    <!-- Contenido principal -->
+    <main>
+        <h2 id="available-songs-title">Canciones disponibles</h2>
+        <ul class="song-list">
+            <li class="song-item">
+                <span>1-Natural Born Gamblin` Man</span>
+                <div class="progress-container" onclick="seekProgress('audioPlayer1', event)">
+                    <div id="progressBar1" class="progress-bar"></div>
+                </div>
+                <div>
+                    <button id="playButton1" onclick="handlePlay('https://ia600606.us.archive.org/5/items/billystrings2024-12-31.mk4v.flac24/bs2024-12-31_t02.mp3', 'audioPlayer1', this)">Reproducir</button>
+                    <button id="pauseButton1" onclick="togglePause('audioPlayer1', this)" disabled>Pausar</button>
+                    <audio id="audioPlayer1" onended="resetPlayButton('playButton1')"></audio>
+                </div>
+                <div class="time-display" id="timeDisplay1">00:00</div>
+            </li>
+            <li class="song-item">
+                <span>2-Leaning On A Travelin` Song</span>
+                <div class="progress-container" onclick="seekProgress('audioPlayer2', event)">
+                    <div id="progressBar2" class="progress-bar"></div>
+                </div>
+                <div>
+                    <button id="playButton2" onclick="handlePlay('https://ia800606.us.archive.org/5/items/billystrings2024-12-31.mk4v.flac24/bs2024-12-31_t03.mp3', 'audioPlayer2', this)">Reproducir</button>
+                    <button id="pauseButton2" onclick="togglePause('audioPlayer2', this)" disabled>Pausar</button>
+                    <audio id="audioPlayer2" onended="resetPlayButton('playButton2')"></audio>
+                </div>
+                <div class="time-display" id="timeDisplay2">00:00</div>
+            </li>
+            <li class="song-item">
+                <span>3-Hollow Heart</span>
+                <div class="progress-container" onclick="seekProgress('audioPlayer3', event)">
+                    <div id="progressBar3" class="progress-bar"></div>
+                </div>
+                <div>
+                    <button id="playButton3" onclick="handlePlay('https://ia800606.us.archive.org/5/items/billystrings2024-12-31.mk4v.flac24/bs2024-12-31_t05.mp3', 'audioPlayer3', this)">Reproducir</button>
+                    <button id="pauseButton3" onclick="togglePause('audioPlayer3', this)" disabled>Pausar</button>
+                    <audio id="audioPlayer3" onended="resetPlayButton('playButton3')"></audio>
+                </div>
+                <div class="time-display" id="timeDisplay3">00:00</div>
+            </li>
+            <li class="song-item">
+                <span>4-Running On Empty</span>
+                <div class="progress-container" onclick="seekProgress('audioPlayer4', event)">
+                    <div id="progressBar4" class="progress-bar"></div>
+                </div>
+                <div>
+                    <button id="playButton4" onclick="handlePlay('https://ia800606.us.archive.org/5/items/billystrings2024-12-31.mk4v.flac24/bs2024-12-31_t06.mp3', 'audioPlayer4', this)">Reproducir</button>
+                    <button id="pauseButton4" onclick="togglePause('audioPlayer4', this)" disabled>Pausar</button>
+                    <audio id="audioPlayer4" onended="resetPlayButton('playButton4')"></audio>
+                </div>
+                <div class="time-display" id="timeDisplay4">00:00</div>
+            </li>
+            <li class="song-item">
+                <span>5-Blackjack</span>
+                <div class="progress-container" onclick="seekProgress('audioPlayer5', event)">
+                    <div id="progressBar5" class="progress-bar"></div>
+                </div>
+                <div>
+                    <button id="playButton5" onclick="handlePlay('https://ia600606.us.archive.org/5/items/billystrings2024-12-31.mk4v.flac24/bs2024-12-31_t08.mp3', 'audioPlayer5', this)">Reproducir</button>
+                    <button id="pauseButton5" onclick="togglePause('audioPlayer5', this)" disabled>Pausar</button>
+                    <audio id="audioPlayer5" onended="resetPlayButton('playButton5')"></audio>
+                </div>
+                <div class="time-display" id="timeDisplay5">00:00</div>
+            </li>
+            <li class="song-item">
+                <span>6-In The Morning Light</span>
+                <div class="progress-container" onclick="seekProgress('audioPlayer6', event)">
+                    <div id="progressBar6" class="progress-bar"></div>
+                </div>
+                <div>
+                    <button id="playButton6" onclick="handlePlay('https://ia800606.us.archive.org/5/items/billystrings2024-12-31.mk4v.flac24/bs2024-12-31_t09.mp3', 'audioPlayer6', this)">Reproducir</button>
+                    <button id="pauseButton6" onclick="togglePause('audioPlayer6', this)" disabled>Pausar</button>
+                    <audio id="audioPlayer6" onended="resetPlayButton('playButton6')"></audio>
+                </div>
+                <div class="time-display" id="timeDisplay6">00:00</div>
+            </li>
+            <li class="song-item">
+                <span>7-Must Be Seven</span>
+                <div class="progress-container" onclick="seekProgress('audioPlayer7', event)">
+                    <div id="progressBar7" class="progress-bar"></div>
+                </div>
+                <div>
+                    <button id="playButton7" onclick="handlePlay('https://ia800606.us.archive.org/5/items/billystrings2024-12-31.mk4v.flac24/bs2024-12-31_t11.mp3', 'audioPlayer7', this)">Reproducir</button>
+                    <button id="pauseButton7" onclick="togglePause('audioPlayer7', this)" disabled>Pausar</button>
+                    <audio id="audioPlayer7" onended="resetPlayButton('playButton7')"></audio>
+                </div>
+                <div class="time-display" id="timeDisplay7">00:00</div>
+            </li>
+        </ul>
+    </main>
+    <!-- Pie de página -->
+    <footer>
+        <!-- Sin contenido en el pie de página -->
+    </footer>
+    <!-- Script para reproducir, pausar, gestionar el progreso, buscar y mostrar el tiempo -->
+    <script>
+        let currentAudioId = null;
+        let currentLanguage = 'es'; // Idioma predeterminado
+        const spanishAudio = new Audio("https://ia601409.us.archive.org/0/items/ia-espanol/IA%20%28espa%C3%B1ol%29.mp3");
+        const englishAudio = new Audio("https://ia801409.us.archive.org/0/items/ia-espanol/IA%20%28ingles%29.mp3");
+        // Función para establecer el idioma
+        function setLanguage(language) {
+            resetAllSongs(); // Reiniciar todas las canciones al cambiar el idioma
+            const languageSelection = document.getElementById('language-selection');
+            const mainContent = document.querySelector('main');
+            const headerTitle = document.getElementById('header-title');
+            const billyText = document.getElementById('billy-text');
+            const descriptionText = document.getElementById('description-text');
+            const headerSubtitle = document.getElementById('header-subtitle');
+            const availableSongsTitle = document.getElementById('available-songs-title');
+            if (language === 'es') {
+                currentLanguage = 'es';
+                headerTitle.textContent = '🎵 Música Online 🎵';
+                billyText.textContent = 'Billy Strings';
+                descriptionText.textContent = 'Billy Strings es un artista revolucionario que redefine el bluegrass con sus electrizantes habilidades de guitarra y su narrativa conmovedora. Conocido por sus actuaciones en vivo de alta energía, esta selección incluye temas como "Natural Born Gamblin\' Man" y "Hollow Heart", combinando raíces tradicionales con un toque moderno. Sumérgete en su música y experimenta la magia de un verdadero innovador del género.';
+                headerSubtitle.textContent = 'Escucha tus canciones favoritas de Billy Strings aquí';
+                availableSongsTitle.textContent = 'Canciones disponibles';
+                document.querySelectorAll('.song-item button:nth-child(1)').forEach(button => {
+                    button.textContent = 'Reproducir';
+                });
+                document.querySelectorAll('.song-item button:nth-child(2)').forEach(button => {
+                    button.textContent = 'Pausar';
+                });
+                // Reproducir audio en español
+                spanishAudio.play().catch(error => {
+                    console.error("Error al reproducir el audio en español:", error);
+                });
+                // Detener audio en inglés si está reproduciéndose
+                englishAudio.pause();
+                englishAudio.currentTime = 0;
+            } else if (language === 'en') {
+                currentLanguage = 'en';
+                headerTitle.textContent = '🎵 Online Music 🎵';
+                billyText.textContent = 'Billy Strings';
+                descriptionText.textContent = 'Billy Strings is a groundbreaking artist redefining bluegrass with his electrifying guitar skills and soulful storytelling. Known for high-energy live performances, this selection features tracks like "Natural Born Gamblin’ Man" and "Hollow Heart," blending traditional roots with modern flair. Dive into his music and experience the magic of a true genre innovator.';
+                headerSubtitle.textContent = 'Listen to your favorite songs from Billy Strings here';
+                availableSongsTitle.textContent = 'Available songs';
+                document.querySelectorAll('.song-item button:nth-child(1)').forEach(button => {
+                    button.textContent = 'Play';
+                });
+                document.querySelectorAll('.song-item button:nth-child(2)').forEach(button => {
+                    button.textContent = 'Pause';
+                });
+                // Reproducir audio en inglés
+                englishAudio.play().catch(error => {
+                    console.error("Error al reproducir el audio en inglés:", error);
+                });
+                // Detener audio en español si está reproduciéndose
+                spanishAudio.pause();
+                spanishAudio.currentTime = 0;
+            }
+            // Ocultar la pantalla de selección de idioma y mostrar el contenido principal
+            languageSelection.style.display = 'none';
+            mainContent.style.display = 'block';
+        }
+        function handlePlay(songUrl, audioId, button) {
+            const audioPlayer = document.getElementById(audioId);
+            // Detener el audio automático en ambos idiomas
+            spanishAudio.pause();
+            spanishAudio.currentTime = 0;
+            englishAudio.pause();
+            englishAudio.currentTime = 0;
+            // Detener cualquier otra canción que esté reproduciéndose o pausada
+            if (currentAudioId && currentAudioId !== audioId) {
+                const currentAudio = document.getElementById(currentAudioId);
+                currentAudio.pause();
+                currentAudio.currentTime = 0; // Reiniciar el tiempo de reproducción
+                resetProgressBar(currentAudioId); // Reiniciar la barra de progreso
+                resetPlayButton(`playButton${currentAudioId.slice(-1)}`); // Restaurar texto del botón de Reproducir
+                resetTimeDisplay(currentAudioId); // Reiniciar el contador de tiempo
+            }
+            // Configurar la nueva canción si no tiene un src válido
+            if (!audioPlayer.src || audioPlayer.src !== songUrl) {
+                audioPlayer.src = songUrl;
+            }
+            // Reiniciar siempre la canción al hacer clic en "Reproducir"
+            audioPlayer.currentTime = 0;
+            // Manejar la reproducción
+            audioPlayer.play().then(() => {
+                currentAudioId = audioId; // Actualizar la canción actual
+                enablePauseButton(audioId); // Activar el botón de pausa solo para esta canción
+                updateProgressBar(audioId); // Iniciar la actualización de la barra de progreso
+                updateTimeDisplay(audioId); // Iniciar la actualización del contador de tiempo
+                // Cambiar el texto del botón de "Reproducir" a "Reiniciar/Reset"
+                button.textContent = currentLanguage === 'es' ? 'Reiniciar' : 'Reset';
+            }).catch(error => {
+                console.error("Error al reproducir la canción:", error);
+                alert("Ocurrió un error al intentar reproducir la canción. Por favor, inténtalo de nuevo.");
+            });
+        }
+        function togglePause(audioId, button) {
+            const audioPlayer = document.getElementById(audioId);
+            if (audioPlayer.paused) {
+                audioPlayer.play().then(() => {
+                    button.textContent = currentLanguage === 'es' ? 'Pausar' : 'Pause';
+                }).catch(error => {
+                    console.error("Error al reproducir la canción:", error);
+                    alert("Ocurrió un error al intentar reproducir la canción. Por favor, inténtalo de nuevo.");
+                    button.textContent = currentLanguage === 'es' ? 'Continuar' : 'Continue';
+                });
+            } else {
+                audioPlayer.pause();
+                button.textContent = currentLanguage === 'es' ? 'Continuar' : 'Continue';
+            }
+        }
+        function enablePauseButton(activeAudioId) {
+            // Desactivar todos los botones de pausa
+            document.querySelectorAll(".song-item button:nth-child(2)").forEach(button => {
+                button.disabled = true;
+                button.textContent = currentLanguage === 'es' ? 'Pausar' : 'Pause';
+            });
+            // Activar solo el botón de pausa correspondiente a la canción activa
+            const activePauseButton = document.querySelector(`#pauseButton${activeAudioId.slice(-1)}`);
+            if (activePauseButton) {
+                activePauseButton.disabled = false;
+            }
+        }
+        function updateProgressBar(audioId) {
+            const audioPlayer = document.getElementById(audioId);
+            const progressBar = document.getElementById(`progressBar${audioId.slice(-1)}`);
+            const update = () => {
+                if (audioPlayer.duration) {
+                    const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                    progressBar.style.width = `${progress}%`;
+                }
+                requestAnimationFrame(update); // Continuar actualizando incluso si está pausado
+            };
+            update();
+        }
+        function resetProgressBar(audioId) {
+            const progressBar = document.getElementById(`progressBar${audioId.slice(-1)}`);
+            progressBar.style.width = "0%";
+        }
+        function seekProgress(audioId, event) {
+            const audioPlayer = document.getElementById(audioId);
+            const progressBarContainer = event.currentTarget;
+            const rect = progressBarContainer.getBoundingClientRect();
+            const clickX = event.clientX - rect.left; // Posición del clic horizontal
+            const width = progressBarContainer.offsetWidth; // Ancho total del contenedor
+            const seekTime = (clickX / width) * audioPlayer.duration; // Calcular el tiempo buscado
+            // Actualizar el tiempo de reproducción
+            audioPlayer.currentTime = seekTime;
+            // Actualizar la barra de progreso visualmente
+            const progressBar = document.getElementById(`progressBar${audioId.slice(-1)}`);
+            progressBar.style.width = `${(clickX / width) * 100}%`;
+        }
+        function resetPlayButton(buttonId) {
+            const playButton = document.getElementById(buttonId);
+            if (playButton) {
+                playButton.textContent = currentLanguage === 'es' ? 'Reproducir' : 'Play';
+            }
+        }
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+        function updateTimeDisplay(audioId) {
+            const audioPlayer = document.getElementById(audioId);
+            const timeDisplay = document.getElementById(`timeDisplay${audioId.slice(-1)}`);
+            const update = () => {
+                timeDisplay.textContent = formatTime(audioPlayer.currentTime);
+                requestAnimationFrame(update); // Continuar actualizando incluso si está pausado
+            };
+            update();
+        }
+        function resetTimeDisplay(audioId) {
+            const timeDisplay = document.getElementById(`timeDisplay${audioId.slice(-1)}`);
+            timeDisplay.textContent = "00:00";
+        }
+        function resetAllSongs() {
+            // Detener y reiniciar todas las canciones
+            for (let i = 1; i <= 7; i++) {
+                const audioPlayer = document.getElementById(`audioPlayer${i}`);
+                const progressBar = document.getElementById(`progressBar${i}`);
+                const playButton = document.getElementById(`playButton${i}`);
+                const pauseButton = document.getElementById(`pauseButton${i}`);
+                const timeDisplay = document.getElementById(`timeDisplay${i}`);
+                if (audioPlayer) {
+                    audioPlayer.pause();
+                    audioPlayer.currentTime = 0;
+                }
+                if (progressBar) {
+                    progressBar.style.width = "0%";
+                }
+                if (playButton) {
+                    playButton.textContent = currentLanguage === 'es' ? 'Reproducir' : 'Play';
+                }
+                if (pauseButton) {
+                    pauseButton.disabled = true;
+                    pauseButton.textContent = currentLanguage === 'es' ? 'Pausar' : 'Pause';
+                }
+                if (timeDisplay) {
+                    timeDisplay.textContent = "00:00";
+                }
+            }
+            currentAudioId = null; // Reiniciar la referencia a la canción actual
+        }
+    </script>
+</body>
+</html>
